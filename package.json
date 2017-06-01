@@ -1,6 +1,6 @@
 {
   "name": "grpc.client",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "a simple client for gRPC",
   "main": "index.js",
   "files": [
@@ -20,7 +20,8 @@
   },
   "keywords": [
     "grpc",
-    "client"
+    "client",
+    "services"
   ],
   "author": "@JoaquimSerafim",
   "license": "ISC",

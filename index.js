@@ -63,13 +63,13 @@ module.exports = function factory (config) {
 function filterRpcFunctions (obj) {
   const props = Object.getPrototypeOf(obj)
 
-  const find = []
+  const found = []
 
   for (let prop in props) {
-    find.push(prop)
+    found.push(prop)
   }
 
-  return find
+  return found
 }
 
 function wrapRpcFunction (fn, data, metadata) {

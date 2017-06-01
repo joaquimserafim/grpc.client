@@ -4,6 +4,7 @@ package books;
 
 service BookService {
   rpc List (Empty) returns (BookList) {}
+  rpc Insert (Book) returns (Empty) {}
 }
 
 message Empty {}
