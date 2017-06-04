@@ -9,6 +9,7 @@ max-len: ["error", 80]
 const { describe, it, before, after } = require('mocha')
 const grpc        = require('grpc')
 const { expect }  = require('chai')
+const omit        = require('omit.keys')
 
 const client = require('../')
 
@@ -19,8 +20,11 @@ var rpcServer
 var clientCertificates = {}
 
 const protos = {
-  helloWorld: 'test/protos/hello-world.proto'
+  helloWorld: 'test/protos/hello-world.proto',
+  helloWorldStream: 'test/protos/hello-world-stream.proto'
 }
+
+var bigFile = null
 
 describe('gRPC client', () => {
 
@@ -129,9 +133,22 @@ describe('gRPC client', () => {
 
     it('should do a rpc call successful passing metadata on the constructor',
       (done) => {
-        client({metadata: [{ 'request-id': 12345 }]})
+        client({metadata: { 'request-id': 12345 }})
           .service('Greeter', protos.helloWorld)
           .sayHello({ name: 'Scaramouche' }, [{ 'device-id': 'yay!!!' }])
+          .end((err, res) => {
+            expect(err).to.be.deep.equal(null)
+            expect(res).to.be.deep.equal({ message: 'Hello Scaramouche' })
+            done()
+          })
+      }
+    )
+
+    it('should do a rpc call successful passing metadata with the function',
+      (done) => {
+        client({metadata: { 'request-id': 12345 }})
+          .service('Greeter', protos.helloWorld)
+          .sayHello({ name: 'Scaramouche' }, { 'request-id': 123456 })
           .end((err, res) => {
             expect(err).to.be.deep.equal(null)
             expect(res).to.be.deep.equal({ message: 'Hello Scaramouche' })
@@ -187,6 +204,7 @@ describe('gRPC client', () => {
 
     after((done) => {
       rpcServer.forceShutdown()
+      rpcServer = null
       done()
     })
 
@@ -211,5 +229,74 @@ describe('gRPC client', () => {
           done()
         })
     })
+  })
+
+  describe('testing the stream client', () => {
+    before((done) => {
+      const proto = grpc.load(protos.helloWorldStream).helloWorld
+
+      rpcServer = new grpc.Server()
+      rpcServer
+        .addService(proto.Greeter.service, { sayHelloStream: sayHelloStream })
+      rpcServer.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure())
+      rpcServer.start()
+
+      done()
+
+      function sayHelloStream (call) {
+        addMetadata(getClientMetadata(call.metadata), call.status.metadata)
+        call.write(bigFile)
+        call.end()
+      }
+
+      function getClientMetadata (metadata) {
+        return omit(metadata.getMap(), 'user-agent')
+      }
+
+      function addMetadata (metaObject, metadata) {
+        for (let key in metaObject) {
+          metadata.set(key, metaObject[key])
+        }
+      }
+    })
+
+    after((done) => {
+      rpcServer.forceShutdown()
+      done()
+    })
+
+    it('should emit an error when sending bad data', (done) => {
+      client({ type: 'stream' })
+        .service('Greeter', protos.helloWorldStream)
+        .sayHelloStream()
+        .end((err, res) => {
+          expect(err.message).to.be.deep
+            .equal('May not write null values to stream')
+          expect(res).to.be.deep.equal(undefined)
+          bigFile = require('./fixtures/big-file.json')
+          done()
+        })
+    })
+
+    it('should do a rpc call successful streaming a big payload',
+      (done) => {
+        client({ type: 'stream', metadata: { 'device': 123 } })
+          .service('Greeter', protos.helloWorldStream)
+          .sayHelloStream()
+          .setMetadata({ 'request-id': 123, 'place': 'Ldn' })
+          .end((err, res, metadata) => {
+            expect(err).to.be.deep.equal(null)
+            expect(res.message.length).to.be.equal(100000)
+            expect(metadata).to.be.deep.equal(
+              {
+                'device': '123',
+                'request-id': '123',
+                'place': 'Ldn'
+              }
+            )
+            done()
+          })
+      }
+    )
   })
 })

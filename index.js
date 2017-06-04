@@ -15,10 +15,11 @@ class Client {
   constructor (config) {
     const nConfig = config || {}
 
+    this._type = nConfig.type || 'unary'
     this._address = nConfig.address || '0.0.0.0:50051'
     this._creedentials = setAuthentication(nConfig.creedentials) ||
       credentials.createInsecure()
-    this._metadata = addMetadata(nConfig.metadata || [], new Metadata())
+    this._metadata = addMetadata(nConfig.metadata)
   }
 
   service (service, protoFile) {
@@ -42,12 +43,38 @@ class Client {
     return this
   }
 
+  setMetadata (metadata) {
+    this._metadata = isObject(metadata) && addMetadata(metadata, this._metadata)
+
+    return this
+  }
+
   end (cb) {
-    this._client[this._exec.fn](
-      this._exec.data,
-      addMetadata(this._exec.metadata || [], this._metadata),
-      cb
-    )
+    if (this._exec.data && isObject(this._exec.metadata)) {
+      this._metadata = addMetadata(this._exec.metadata, this._metadata)
+    }
+
+    if (this._type === 'unary') {
+      return this._client[this._exec.fn](this._exec.data, this._metadata, cb)
+    }
+
+    const call = this._client[this._exec.fn](this._exec.data, this._metadata)
+
+    const res = { error: null, metadata: {} }
+
+    call
+      .on('data', (data) => {
+        res.data = data
+      })
+      .on('error', (err) => {
+        res.error = err
+      })
+      .on('status', (status) => {
+        res.metadata = status.metadata.getMap()
+        // when is an error the event `end` is not called
+        // maybe this is an issue on gRPC module
+        cb(res.error, res.data, res.metadata)
+      })
   }
 
 }
@@ -90,11 +117,12 @@ function setAuthentication (certs) {
     )
 }
 
-function addMetadata (metaArray, metaObject) {
-  for (let i = 0; i < metaArray.length; i++) {
-    const key = Object.keys(metaArray[i])[0]
-    metaObject.add(key, metaArray[i][key] + '')
+function addMetadata (newMetadata, metadata) {
+  const setMeta = metadata || new Metadata()
+
+  for (let key in newMetadata) {
+    setMeta.set(key, newMetadata[key] + '')
   }
 
-  return metaObject
+  return setMeta
 }
