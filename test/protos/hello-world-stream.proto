@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package helloWorld;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHelloStream (EmptyHello) returns (stream BigHelloReply) {}
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+
+message BigHelloReply {
+  repeated HelloReply message = 1;
+}
+
+message EmptyHello {}

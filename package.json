@@ -1,6 +1,6 @@
 {
   "name": "grpc.client",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "a simple client for gRPC",
   "main": "index.js",
   "files": [
@@ -35,6 +35,7 @@
     "mocha": "^3.4.2",
     "node-forge": "^0.7.1",
     "nyc": "^10.3.2",
+    "omit.keys": "^3.0.0",
     "pre-commit": "^1.2.2",
     "standard": "^10.0.2"
   },
