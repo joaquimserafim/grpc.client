@@ -84,7 +84,7 @@ greeter
     console.log(res)// will print { message: 'Hello Scaramouche' }
   })
 
-//. no data sends to the server
+// no data sends to the server
 
 greeter
   .service('Greeter', protos.something)

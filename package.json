@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joaquimserafim/grpc.clien.git"
+    "url": "git+https://github.com/joaquimserafim/grpc.client.git"
   },
   "keywords": [
     "grpc",
@@ -26,9 +26,9 @@
   "author": "@JoaquimSerafim",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/joaquimserafim/grpc.clien/issues"
+    "url": "https://github.com/joaquimserafim/grpc.client/issues"
   },
-  "homepage": "https://github.com/joaquimserafim/grpc.clien#readme",
+  "homepage": "https://github.com/joaquimserafim/grpc.client#readme",
   "devDependencies": {
     "chai": "^4.0.0",
     "coveralls": "^2.13.1",
