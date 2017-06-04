@@ -5,7 +5,7 @@ package helloWorld;
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
-  rpc SayHelloStream (EmptyHello) returns (stream BigHelloReply) {}
+  rpc sayHelloStream (EmptyHello) returns (stream BigHelloReply) {}
 }
 
 // The response message containing the greetings
