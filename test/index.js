@@ -156,6 +156,20 @@ describe('gRPC client', () => {
           })
       }
     )
+
+    it('should wrok fine when passing undefined data to `setMetadata`',
+      (done) => {
+        client()
+          .service('Greeter', protos.helloWorld)
+          .sayHello({ name: 'Scaramouche' })
+          .setMetadata()
+          .end((err, res) => {
+            expect(err).to.be.deep.equal(null)
+            expect(res).to.be.deep.equal({ message: 'Hello Scaramouche' })
+            done()
+          })
+      }
+    )
   })
 
   describe('testing the authenticted ssl/tls client', () => {
@@ -231,8 +245,11 @@ describe('gRPC client', () => {
     })
   })
 
-  describe('testing the stream client', () => {
+  describe('testing the stream client', function () {
+    this.timeout(10000)
+
     before((done) => {
+
       const proto = grpc.load(protos.helloWorldStream).helloWorld
 
       rpcServer = new grpc.Server()
