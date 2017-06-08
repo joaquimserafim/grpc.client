@@ -44,7 +44,9 @@ class Client {
   }
 
   setMetadata (metadata) {
-    this._metadata = isObject(metadata) && addMetadata(metadata, this._metadata)
+    if (isObject(metadata)) {
+      this._metadata = addMetadata(metadata, this._metadata)
+    }
 
     return this
   }
