@@ -18,8 +18,8 @@ class Client {
     this._type = nConfig.type || 'unary'
     this._address = nConfig.address || '0.0.0.0:50051'
     this._metadata = addMetadata(nConfig.metadata)
-    this._creedentials = isObject(nConfig.creedentials)
-      ? setAuthentication(nConfig.creedentials)
+    this._credentials = isObject(nConfig.credentials)
+      ? setAuthentication(nConfig.credentials)
       : credentials.createInsecure()
     credentials.createInsecure()
   }
@@ -34,7 +34,7 @@ class Client {
     const Proto = load(protoFile)
     const pkg   = Object.keys(Proto)[0]
 
-    this._client = new Proto[pkg][service](this._address, this._creedentials)
+    this._client = new Proto[pkg][service](this._address, this._credentials)
 
     const functions = filterRpcFunctions(this._client)
 

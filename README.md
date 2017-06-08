@@ -17,7 +17,7 @@ a simple NodeJS client for gRPC
 * **client(an optional {})**
   - **type** string, with the values `unary` and `stream`, `unary` is the default value
   - **address** string with the format `url:port`
-  - **creedentials** can use `credentials.createInsecure` or with certificates through an object { ca, key, client }
+  - **credentials** can use `credentials.createInsecure` or with certificates through an object { ca, key, client }
   - **metadata** set metadata that can be used in all calls, an array with { key: value }
 
 **methods**

@@ -245,7 +245,7 @@ describe('gRPC client', () => {
     })
 
     it('should emit an error when the certificates are missed', (done) => {
-      client({address: '127.0.0.1:50052', creedentials: null})
+      client({address: '127.0.0.1:50052', credentials: null})
         .service('Greeter', protos.helloWorld)
         .sayHello({ name: 'Scaramouche' })
         .end((err, res) => {
@@ -256,7 +256,7 @@ describe('gRPC client', () => {
     })
 
     it('should do a rpc call successful', (done) => {
-      client({address: '127.0.0.1:50052', creedentials: clientCertificates})
+      client({address: '127.0.0.1:50052', credentials: clientCertificates})
         .service('Greeter', protos.helloWorld)
         .sayHello({ name: 'Scaramouche' })
         .end((err, res) => {
