@@ -7,7 +7,7 @@ max-len: ["error", 80]
 'use strict'
 
 const { describe, it, before, after } = require('mocha')
-const grpc        = require('grpc')
+const server      = require('grpc.server')
 const { expect }  = require('chai')
 const omit        = require('omit.keys')
 
@@ -24,30 +24,58 @@ const protos = {
   helloWorldStream: 'test/protos/hello-world-stream.proto'
 }
 
+const services = [
+  {
+    proto: protos.helloWorld,
+    package: 'helloWorld',
+    name: 'Greeter',
+    methods: { sayHello: sayHello }
+  },
+  {
+    proto: protos.helloWorldStream,
+    package: 'helloWorldStream',
+    name: 'Greeter',
+    methods: { sayHelloStream: sayHelloStream }
+  }
+]
+
+function sayHello (call, cb) {
+  cb(null, { message: 'Hello ' + call.request.name })
+}
+
+function sayHelloStream (call) {
+  addMetadata(getClientMetadata(call.metadata), call.status.metadata)
+  call.write(bigFile)
+  call.end()
+
+  function getClientMetadata (metadata) {
+    return omit(metadata.getMap(), 'user-agent')
+  }
+
+  function addMetadata (metaObject, metadata) {
+    for (let key in metaObject) {
+      metadata.set(key, metaObject[key])
+    }
+  }
+}
+
 var bigFile = null
 
 describe('gRPC client', () => {
 
   describe('functional test', () => {
     before((done) => {
-      const proto = grpc.load(protos.helloWorld).helloWorld
+      rpcServer = server()
+      rpcServer.addServices(services)
 
-      rpcServer = new grpc.Server()
-      rpcServer.addService(proto.Greeter.service, { sayHello: sayHello })
-      rpcServer.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure())
-      rpcServer.start()
-
-      done()
-
-      function sayHello (call, cb) {
-        cb(null, { message: 'Hello ' + call.request.name })
-      }
+      rpcServer.start(done)
     })
 
     after((done) => {
-      rpcServer.forceShutdown()
-      rpcServer = null
-      done()
+      rpcServer.stop(() => {
+        rpcServer = null
+        done()
+      })
     })
 
     it('should throw an error when using a non string on the service name',
@@ -174,34 +202,31 @@ describe('gRPC client', () => {
 
   describe('testing the authenticted ssl/tls client', () => {
     before((done) => {
-      const proto = grpc.load(protos.helloWorld).helloWorld
 
       certificates(serverStart)
 
       function serverStart (_, pem) {
-        const creedentials = grpc
-          .ServerCredentials
-          .createSsl(
-            Buffer.from(pem.certificate),
-          [
-            {
-              cert_chain: Buffer.from(pem.certificate),
-              private_key: Buffer.from(pem.privateKey)
+
+        rpcServer = server(
+          {
+            address: '127.0.0.1:50052',
+            creedentials: {
+              ca: pem.certificate,
+              server: pem.certificate,
+              key: pem.privateKey
             }
-          ]
-          )
+          }
+        )
+
+        rpcServer.addServices(services)
 
         // CA to be used by the client
         clientCertificates.ca = pem.certificate
 
-        rpcServer = new grpc.Server()
-
-        rpcServer.addService(proto.Greeter.service, { sayHello: sayHello })
-        rpcServer.bind('127.0.0.1:50052', creedentials)
-        rpcServer.start()
-
-        // get client certificates
-        certificates(getClientCertificates)
+        rpcServer.start(() => {
+          // get client certificates
+          certificates(getClientCertificates)
+        })
       }
 
       function getClientCertificates (_, pem) {
@@ -210,16 +235,13 @@ describe('gRPC client', () => {
 
         done()
       }
-
-      function sayHello (call, cb) {
-        cb(null, { message: 'Hello ' + call.request.name })
-      }
     })
 
     after((done) => {
-      rpcServer.forceShutdown()
-      rpcServer = null
-      done()
+      rpcServer.stop(() => {
+        rpcServer = null
+        done()
+      })
     })
 
     it('should emit an error when the certificates are missed', (done) => {
@@ -249,37 +271,18 @@ describe('gRPC client', () => {
     this.timeout(10000)
 
     before((done) => {
+      rpcServer = server()
 
-      const proto = grpc.load(protos.helloWorldStream).helloWorld
+      rpcServer.addServices(services)
 
-      rpcServer = new grpc.Server()
-      rpcServer
-        .addService(proto.Greeter.service, { sayHelloStream: sayHelloStream })
-      rpcServer.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure())
-      rpcServer.start()
-
-      done()
-
-      function sayHelloStream (call) {
-        addMetadata(getClientMetadata(call.metadata), call.status.metadata)
-        call.write(bigFile)
-        call.end()
-      }
-
-      function getClientMetadata (metadata) {
-        return omit(metadata.getMap(), 'user-agent')
-      }
-
-      function addMetadata (metaObject, metadata) {
-        for (let key in metaObject) {
-          metadata.set(key, metaObject[key])
-        }
-      }
+      rpcServer.start(done)
     })
 
     after((done) => {
-      rpcServer.forceShutdown()
-      done()
+      rpcServer.stop(() => {
+        rpcServer = null
+        done()
+      })
     })
 
     it('should emit an error when sending bad data', (done) => {

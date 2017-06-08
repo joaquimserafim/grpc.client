@@ -17,9 +17,11 @@ class Client {
 
     this._type = nConfig.type || 'unary'
     this._address = nConfig.address || '0.0.0.0:50051'
-    this._creedentials = setAuthentication(nConfig.creedentials) ||
-      credentials.createInsecure()
     this._metadata = addMetadata(nConfig.metadata)
+    this._creedentials = isObject(nConfig.creedentials)
+      ? setAuthentication(nConfig.creedentials)
+      : credentials.createInsecure()
+    credentials.createInsecure()
   }
 
   service (service, protoFile) {
@@ -111,7 +113,7 @@ function wrapRpcFunction (fn, data, metadata) {
 }
 
 function setAuthentication (certs) {
-  return isObject(certs) && credentials
+  return credentials
     .createSsl(
       Buffer.from(certs.ca),
       Buffer.from(certs.key),
