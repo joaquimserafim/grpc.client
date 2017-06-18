@@ -17,7 +17,7 @@ class Client {
 
     this._type = nConfig.type || 'unary'
     this._address = nConfig.address || '0.0.0.0:50051'
-    this._creedentials = isObject(nConfig.credentials)
+    this._credentials = isObject(nConfig.credentials)
       ? setAuthentication(nConfig.credentials)
       : credentials.createInsecure()
     this._metadata = addMetadata(nConfig.metadata)
@@ -33,7 +33,7 @@ class Client {
     const Proto = load(protoFile)
     const pkg   = Object.keys(Proto)[0]
 
-    this._client = new Proto[pkg][service](this._address, this._creedentials)
+    this._client = new Proto[pkg][service](this._address, this._credentials)
 
     const functions = filterRpcFunctions(this._client)
 
@@ -75,7 +75,7 @@ class Client {
       .on('status', (status) => {
         res.metadata = status.metadata.getMap()
         // when is an error the event `end` is not called
-        // maybe this is an issue on gRPC module
+        // maybe this is an issue in the gRPC module
         cb(res.error, res.data, res.metadata)
       })
   }

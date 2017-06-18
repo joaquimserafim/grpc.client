@@ -1,6 +1,6 @@
 {
   "name": "grpc.client",
-  "version": "3.2.1",
+  "version": "4.0.0",
   "description": "a simple client for gRPC",
   "main": "index.js",
   "files": [
@@ -32,9 +32,8 @@
   "devDependencies": {
     "chai": "^4.0.2",
     "coveralls": "^2.13.1",
-    "grpc.server": "^2.0.0",
+    "grpc.server": "^3.0.2",
     "mocha": "^3.4.2",
-    "node-forge": "^0.7.1",
     "nyc": "^11.0.2",
     "omit.keys": "^3.0.0",
     "pre-commit": "^1.2.2",

@@ -7,9 +7,10 @@ max-len: ["error", 80]
 'use strict'
 
 const { describe, it, before, after } = require('mocha')
-const server      = require('grpc.server')
-const { expect }  = require('chai')
-const omit        = require('omit.keys')
+const server            = require('grpc.server')
+const { expect }        = require('chai')
+const omit              = require('omit.keys')
+const { readFileSync }  = require('fs')
 
 const client = require('../')
 
@@ -196,71 +197,65 @@ describe('gRPC client', () => {
     )
   })
 
-  // describe('testing the authenticted ssl/tls client', () => {
-  //   before((done) => {
-  //
-  //     certificates(serverStart)
-  //
-  //     function serverStart (_, pem) {
-  //
-  //       rpcServer = server(
-  //         {
-  //           address: '127.0.0.1:50052',
-  //           creedentials: {
-  //             server: pem.certificate,
-  //             key: pem.privateKey
-  //           }
-  //         }
-  //       )
-  //
-  //       rpcServer.addServices(services)
-  //
-  //       // CA to be used by the client
-  //       clientCertificates.ca = Buffer.from(pem.certificate)
-  //
-  //       rpcServer.start(() => {
-  //         // get client certificates
-  //         certificates(getClientCertificates)
-  //       })
-  //     }
-  //
-  //     function getClientCertificates (_, pem) {
-  //       clientCertificates.key = Buffer.from(pem.privateKey)
-  //       clientCertificates.client = Buffer.from(pem.certificate)
-  //
-  //       done()
-  //     }§
-  //   })
-  //
-  //   after((done) => {
-  //     rpcServer.stop(() => {
-  //       rpcServer = null
-  //       done()
-  //     })
-  //   })
-  //
-  //   it('should emit an error when the certificates are missed', (done) => {
-  //     client({address: '127.0.0.1:50052', credentials: null})
-  //       .service('Greeter', protos.helloWorld)
-  //       .sayHello({ name: 'Scaramouche' })
-  //       .end((err, res) => {
-  //         expect(err.message).to.be.deep.equal('Endpoint read failed')
-  //         expect(res).to.be.deep.equal(undefined)
-  //         done()
-  //       })
-  //   })
-  //
-  //   it('should do a rpc call successful', (done) => {
-  //     client({address: '127.0.0.1:50052', credentials: clientCertificates})
-  //       .service('Greeter', protos.helloWorld)
-  //       .sayHello({ name: 'Scaramouche' })
-  //       .end((err, res) => {
-  //         expect(err).to.be.deep.equal(null)
-  //         expect(res).to.be.deep.equal({ message: 'Hello Scaramouche' })
-  //         done()
-  //       })
-  //   })
-  // })
+  describe('testing the authenticated ssl/tls client', () => {
+    let clientCerts = {}
+    let rpcServerAuth
+
+    before((done) => {
+
+      const key = readFileSync('test/fixtures/certs/server_private.key')
+      const crt = readFileSync('test/fixtures/certs/server.crt')
+      const ca = readFileSync('test/fixtures/certs/ca.crt')
+
+      const serverCerts = {
+        key: key,
+        server: crt
+      }
+
+      clientCerts = {
+        ca: ca,
+        key: key,
+        client: crt
+      }
+
+      rpcServerAuth = server(
+        {
+          credentials: serverCerts,
+          address: 'localhost:50052'
+        }
+      )
+
+      rpcServerAuth
+        .addServices(services)
+        .start(done)
+    })
+
+    after((done) => {
+      rpcServerAuth.stop(done)
+    })
+
+    it('should emit an error when the certificates are missed', (done) => {
+      client({ address: 'localhost:50052', credentials: null })
+        .service('Greeter', protos.helloWorld)
+        .sayHello({ name: 'Scaramouche' })
+        .end((err, res) => {
+          expect(err.message).to.be.deep.equal('Endpoint read failed')
+          expect(res).to.be.deep.equal(undefined)
+          done()
+        })
+    })
+
+    it('should do a rpc call successful', (done) => {
+      client({ address: 'localhost:50052', credentials: clientCerts })
+        .service('Greeter', protos.helloWorld)
+        .sayHello({ name: 'Scaramouche' })
+        .end((err, res) => {
+          expect(err).to.be.deep.equal(null)
+          expect(res).to.be.deep.equal({ message: 'Hello Scaramouche' })
+          done()
+        })
+    })
+  })
 
   describe('testing the stream client', function () {
     this.timeout(10000)
