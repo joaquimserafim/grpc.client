@@ -6,7 +6,7 @@ a simple NodeJS client for gRPC
 ----
 <a href="https://nodei.co/npm/grpc.client/"><img src="https://nodei.co/npm/grpc.client.png?downloads=true"></a>
 
-[![Build Status](https://travis-ci.org/joaquimserafim/grpc.client.svg?branch=master)](https://travis-ci.org/joaquimserafim/grpc.client)[![Coverage Status](https://coveralls.io/repos/github/joaquimserafim/grpc.client/badge.svg)](https://coveralls.io/github/joaquimserafim/grpc.client)[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square)](https://github.com/joaquimserafim/grpc.client/blob/master/LICENSE)[![NodeJS](https://img.shields.io/badge/node-6.x.x-brightgreen.svg?style=flat-square)](https://github.com/joaquimserafim/grpc.client/blob/master/package.json#L46)
+[![Build Status](https://travis-ci.org/joaquimserafim/grpc.client.svg?branch=master)](https://travis-ci.org/joaquimserafim/grpc.client)[![Coverage Status](https://coveralls.io/repos/github/joaquimserafim/grpc.client/badge.svg)](https://coveralls.io/github/joaquimserafim/grpc.client)[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square)](https://github.com/joaquimserafim/grpc.client/blob/master/LICENSE)[![NodeJS](https://img.shields.io/badge/node-6.x.x-brightgreen.svg?style=flat-square)](https://github.com/joaquimserafim/grpc.client/blob/master/package.json#L48)
 
 [![JavaScript Style Guide](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -17,7 +17,7 @@ a simple NodeJS client for gRPC
 * **client(an optional {})**
   - **type** string, with the values `unary` and `stream`, `unary` is the default value
   - **address** string with the format `url:port`
-  - **credentials** can use `credentials.createInsecure` or with certificates through an object { ca, key, client }
+  - **credentials** can use `credentials.createInsecure` or with certificates through an object { ca, key, client } and should be a Buffer
   - **metadata** set metadata that can be used in all calls, an array with { key: value }
 
 **methods**
