@@ -17,11 +17,10 @@ class Client {
 
     this._type = nConfig.type || 'unary'
     this._address = nConfig.address || '0.0.0.0:50051'
-    this._metadata = addMetadata(nConfig.metadata)
-    this._credentials = isObject(nConfig.credentials)
+    this._creedentials = isObject(nConfig.credentials)
       ? setAuthentication(nConfig.credentials)
       : credentials.createInsecure()
-    credentials.createInsecure()
+    this._metadata = addMetadata(nConfig.metadata)
   }
 
   service (service, protoFile) {
@@ -34,7 +33,7 @@ class Client {
     const Proto = load(protoFile)
     const pkg   = Object.keys(Proto)[0]
 
-    this._client = new Proto[pkg][service](this._address, this._credentials)
+    this._client = new Proto[pkg][service](this._address, this._creedentials)
 
     const functions = filterRpcFunctions(this._client)
 
@@ -115,9 +114,9 @@ function wrapRpcFunction (fn, data, metadata) {
 function setAuthentication (certs) {
   return credentials
     .createSsl(
-      Buffer.from(certs.ca),
-      Buffer.from(certs.key),
-      Buffer.from(certs.client)
+      certs.ca,
+      certs.key,
+      certs.client
     )
 }
 
