@@ -1,6 +1,6 @@
 {
   "name": "grpc.client",
-  "version": "3.0.1",
+  "version": "3.1.1",
   "description": "a simple client for gRPC",
   "main": "index.js",
   "files": [
@@ -30,12 +30,12 @@
   },
   "homepage": "https://github.com/joaquimserafim/grpc.client#readme",
   "devDependencies": {
-    "chai": "^4.0.0",
+    "chai": "^4.0.2",
     "coveralls": "^2.13.1",
-    "grpc.server": "^1.0.0",
+    "grpc.server": "^2.0.0",
     "mocha": "^3.4.2",
     "node-forge": "^0.7.1",
-    "nyc": "^10.3.2",
+    "nyc": "^11.0.2",
     "omit.keys": "^3.0.0",
     "pre-commit": "^1.2.2",
     "standard": "^10.0.2"
@@ -53,7 +53,7 @@
     "coverage:check"
   ],
   "dependencies": {
-    "grpc": "^1.3.2",
+    "grpc": "^1.3.8",
     "is.object": "^1.0.0"
   }
 }
