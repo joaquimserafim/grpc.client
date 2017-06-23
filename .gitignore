@@ -5,3 +5,4 @@ coverage
 bench.js
 .nyc_output
 *.html
+npm-debug.log
